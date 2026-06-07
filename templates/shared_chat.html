@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="container mt-5">
+
+    <div class="card shadow">
+
+        <div class="card-header bg-dark text-white">
+
+            <h3>
+
+                🔗 Shared Chat
+
+            </h3>
+
+        </div>
+
+        <div class="card-body">
+
+            <h4>
+
+                {{ shared_chat.title }}
+
+            </h4>
+
+            <hr>
+
+            {% for message in shared_chat.messages.all %}
+
+                {% if message.sender == 'user' %}
+
+                    <div class="text-end mb-3">
+
+                        <div class="d-inline-block bg-primary text-white p-2 rounded">
+
+                            <pre style="white-space: pre-wrap; font-family: inherit;">{{ message.content }}</pre>
+
+                        </div>
+
+                    </div>
+
+                {% else %}
+
+                    <div class="text-start mb-3">
+
+                        <div class="d-inline-block bg-light text-dark p-2 rounded">
+
+                            <pre style="white-space: pre-wrap; font-family: inherit;">{{ message.content }}</pre>
+
+                        </div>
+
+                    </div>
+
+                {% endif %}
+
+            {% empty %}
+
+                <p class="text-muted">
+
+                    No messages available.
+
+                </p>
+
+            {% endfor %}
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

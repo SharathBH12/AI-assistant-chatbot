@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="container mt-5">
+
+    <div class="card shadow p-4">
+
+        <h2 class="mb-4">
+            👤 Profile
+        </h2>
+
+        <hr>
+
+        <p>
+            <strong>Name:</strong>
+            {{ user.first_name }}
+            {{ user.last_name }}
+        </p>
+
+        <p>
+            <strong>Email:</strong>
+            {{ user.email }}
+        </p>
+
+        <p>
+            <strong>Total Chats:</strong>
+            {{ total_chats }}
+        </p>
+
+        <p>
+            <strong>Total Messages:</strong>
+            {{ total_messages }}
+        </p>
+
+    </div>
+
+</div>
+
+{% endblock %}

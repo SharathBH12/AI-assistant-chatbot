@@ -1,0 +1,413 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=DM+Sans:wght@300;400;500&display=swap');
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    background: #020617;
+    min-height: 100vh;
+    font-family: 'DM Sans', sans-serif;
+    position: relative;
+    overflow-x: hidden;
+}
+
+body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+        radial-gradient(ellipse 60% 50% at 20% 10%, rgba(99,102,241,0.25) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 60% at 80% 80%, rgba(6,182,212,0.2) 0%, transparent 60%),
+        radial-gradient(ellipse 40% 40% at 60% 30%, rgba(236,72,153,0.12) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+}
+
+body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+        linear-gradient(rgba(99,102,241,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(99,102,241,0.04) 1px, transparent 1px);
+    background-size: 50px 50px;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.container {
+    position: relative;
+    z-index: 1;
+}
+
+.register-card {
+    background: rgba(255,255,255,0.04);
+    border-radius: 24px;
+    padding: 2.5rem 2rem;
+    position: relative;
+    overflow: hidden;
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid transparent;
+    background-clip: padding-box;
+    box-shadow:
+        0 0 0 1px rgba(99,102,241,0.25),
+        0 0 60px rgba(99,102,241,0.06),
+        0 30px 60px rgba(0,0,0,0.5);
+}
+
+.register-card::before {
+    content: '';
+    position: absolute;
+    width: 220px;
+    height: 220px;
+    border-radius: 50%;
+    background: #6366f1;
+    filter: blur(70px);
+    opacity: 0.08;
+    top: -70px;
+    right: -70px;
+    pointer-events: none;
+}
+
+.register-card::after {
+    content: '';
+    position: absolute;
+    width: 160px;
+    height: 160px;
+    border-radius: 50%;
+    background: #22d3ee;
+    filter: blur(60px);
+    opacity: 0.07;
+    bottom: 30px;
+    left: -50px;
+    pointer-events: none;
+}
+
+.register-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    background: rgba(99,102,241,0.12);
+    border: 1px solid rgba(99,102,241,0.28);
+    border-radius: 100px;
+    padding: 5px 14px;
+    font-size: 12px;
+    color: #a5b4fc;
+    letter-spacing: 0.05em;
+    margin-bottom: 1.1rem;
+}
+
+.register-badge-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #6366f1;
+    animation: badge-pulse 2s infinite;
+}
+
+@keyframes badge-pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.75); }
+}
+
+.register-title {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 2rem;
+    font-weight: 700;
+    color: #f1f5f9;
+    margin: 0 0 0.25rem;
+    line-height: 1.1;
+    letter-spacing: -0.5px;
+}
+
+.register-title .gradient-text {
+    background: linear-gradient(90deg, #818cf8, #22d3ee, #f472b6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.register-subtitle {
+    font-size: 13px;
+    color: #475569;
+    margin: 0 0 1.75rem;
+}
+
+.field-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.field-wrap {
+    position: relative;
+    margin-bottom: 10px;
+}
+
+.field-wrap:last-of-type {
+    margin-bottom: 0;
+}
+
+.field-icon {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #3f5068;
+    font-size: 17px;
+    pointer-events: none;
+    transition: color 0.2s;
+}
+
+.form-control {
+    width: 100%;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 12px;
+    padding: 11px 14px 11px 40px;
+    color: #e2e8f0;
+    font-size: 14px;
+    font-family: 'DM Sans', sans-serif;
+    outline: none;
+    transition: background 0.25s, border-color 0.25s, box-shadow 0.25s;
+}
+
+.form-control::placeholder {
+    color: #3b4f68;
+}
+
+.form-control:focus {
+    background: rgba(99,102,241,0.07);
+    border-color: rgba(99,102,241,0.45);
+    box-shadow: 0 0 0 3px rgba(99,102,241,0.1), 0 0 24px rgba(99,102,241,0.07);
+}
+
+.field-wrap:focus-within .field-icon {
+    color: #818cf8;
+}
+
+.btn-register {
+    width: 100%;
+    padding: 13px;
+    border: none;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #6366f1 0%, #22d3ee 100%);
+    color: #fff;
+    font-size: 15px;
+    font-weight: 500;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    margin-top: 1.25rem;
+    letter-spacing: 0.02em;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.btn-register::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.18), transparent 60%);
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.btn-register:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 35px rgba(99,102,241,0.45);
+    color: #fff;
+}
+
+.btn-register:hover::before {
+    opacity: 1;
+}
+
+.btn-register:active {
+    transform: translateY(0);
+}
+
+.alert {
+    border-radius: 12px;
+    background: rgba(234,179,8,0.12);
+    border: 1px solid rgba(234,179,8,0.25);
+    color: #fde68a;
+    padding: 10px 14px;
+    font-size: 13px;
+    margin-bottom: 1rem;
+}
+
+.register-divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 1.25rem 0 1rem;
+}
+
+.divider-line {
+    flex: 1;
+    height: 1px;
+    background: rgba(255,255,255,0.07);
+}
+
+.divider-text {
+    font-size: 12px;
+    color: #334155;
+    white-space: nowrap;
+}
+
+.login-prompt {
+    text-align: center;
+    font-size: 13px;
+    color: #475569;
+    margin: 0;
+}
+
+.login-link {
+    color: #818cf8;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s;
+}
+
+.login-link:hover {
+    color: #22d3ee;
+}
+
+footer {
+    margin-top: 2rem;
+    text-align: center;
+}
+
+footer p {
+    font-size: 12px;
+    color: #4c26e8;
+    margin: 3px 0;
+    letter-spacing: 0.3px;
+}
+
+footer strong {
+    color: #6366f1;
+    font-weight: 500;
+}
+
+footer hr {
+    border: none;
+    border-top: 1px solid rgba(255,255,255,0.06);
+    margin-bottom: 0.75rem;
+}
+</style>
+
+<div class="container">
+
+    <div class="row justify-content-center mt-5">
+
+        <div class="col-md-5">
+
+            <div class="register-card">
+
+                <div class="register-badge">
+                    <span class="register-badge-dot"></span>
+                    New account
+                </div>
+
+                <h2 class="register-title">
+                    Create your<br>
+                    <span class="gradient-text">Account</span>
+                </h2>
+                <p class="register-subtitle">Join thousands of users today</p>
+
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+
+                <form method="POST">
+                    {% csrf_token %}
+
+                    <div class="field-row">
+                        <div class="field-wrap">
+                            <span class="field-icon">&#128100;</span>
+                            <input type="text"
+                                   name="first_name"
+                                   class="form-control"
+                                   placeholder="First Name"
+                                   required>
+                        </div>
+                        <div class="field-wrap">
+                            <span class="field-icon">&#128100;</span>
+                            <input type="text"
+                                   name="last_name"
+                                   class="form-control"
+                                   placeholder="Last Name"
+                                   required>
+                        </div>
+                    </div>
+
+                    <div class="field-wrap">
+                        <span class="field-icon">@</span>
+                        <input type="text"
+                               name="username"
+                               class="form-control"
+                               placeholder="Username"
+                               required>
+                    </div>
+
+                    <div class="field-wrap">
+                        <span class="field-icon">&#9993;</span>
+                        <input type="email"
+                               name="email"
+                               class="form-control"
+                               placeholder="Email Address"
+                               required>
+                    </div>
+
+                    <div class="field-wrap">
+                        <span class="field-icon">&#128274;</span>
+                        <input type="password"
+                               name="password"
+                               class="form-control"
+                               placeholder="Password"
+                               required>
+                    </div>
+
+                    <button type="submit" class="btn-register">
+                        Create Account &rarr;
+                    </button>
+
+                </form>
+
+                <div class="register-divider">
+                    <div class="divider-line"></div>
+                    <span class="divider-text">already a member?</span>
+                    <div class="divider-line"></div>
+                </div>
+
+                <p class="login-prompt">
+                    <a href="/login/" class="login-link">Sign in to your account</a>
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <footer>
+        <hr>
+        <p>Developed by <strong>Sharath B H</strong></p>
+        <p>© 2026 All Rights Reserved.</p>
+    </footer>
+
+</div>
+
+{% endblock %}

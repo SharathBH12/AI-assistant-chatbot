@@ -1,0 +1,656 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="container-fluid">
+
+    <div class="row vh-100">
+
+        <!-- Sidebar -->
+        <div class="col-md-3 bg-black text-light p-3 border-end border-secondary">
+
+            <h4 class="mb-4">
+                🤖 AI Chatbot
+            </h4>
+
+            <a href="{% url 'new_chat' %}"
+                class="btn btn-success w-100 mb-3">
+
+                + New Chat
+
+            </a>
+
+            <div style="overflow-y:auto; max-height:80vh;">
+
+                {% for chat in chats %}
+
+                <div class="card bg-dark text-light border-secondary mb-2">
+
+                    <div class="card-body p-2">
+
+                        <div class="d-flex justify-content-between align-items-center">
+
+                            <a href="{% url 'chat_detail' chat.id %}"
+                                class="text-decoration-none text-white">
+
+                                {% if chat.is_pinned %}
+                                    📌
+                                {% endif %}
+
+                                {{ chat.title }}
+
+                            </a>
+
+                            <div class="dropdown">
+
+                                <button
+                                    class="btn btn-sm text-light"
+                                    data-bs-toggle="dropdown">
+
+                                    ⋮
+
+                                </button>
+
+                                <ul class="dropdown-menu dropdown-menu-end">
+
+                                    <li>
+                                        <a class="dropdown-item"
+                                            href="#"
+                                            onclick="renameChat('{{ chat.id }}')">
+                                            Rename
+                                        </a>
+                                    </li>
+
+                                    <li>
+                                        <a class="dropdown-item"
+                                            href="/pin-chat/{{ chat.id }}/">
+
+                                            {% if chat.is_pinned %}
+                                                Unpin Chat
+                                            {% else %}
+                                                Pin Chat
+                                            {% endif %}
+
+                                        </a>
+                                    </li>
+
+                                    <li>
+                                        <a class="dropdown-item"
+                                            href="#"
+                                            onclick="shareChat('{{ chat.share_id }}')">
+
+                                            Share
+
+                                        </a>
+                                    </li>
+
+                                    <li>
+
+                                        <a class="dropdown-item"
+                                            href="/export-pdf/{{ chat.id }}/">
+
+                                        Export PDF
+
+                                        </a>
+
+                                    </li>
+
+                                    <li>
+                                        <a class="dropdown-item text-danger"
+                                            href="#"
+                                            onclick="deleteChat('{{ chat.id }}')">
+
+                                            Delete
+
+                                        </a>
+                                    </li>
+
+                                </ul>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                {% empty %}
+
+                <p class="text-muted">
+                    No chats yet
+                </p>
+
+                {% endfor %}
+
+            </div>
+
+        </div>
+
+        <!-- Chat Section -->
+        <div class="col-md-9 d-flex flex-column">
+
+            <!-- Header -->
+            <div class="bg-dark text-light p-3 border-bottom border-secondary">
+
+                {% if selected_chat %}
+
+                    <h4 class="mb-0">
+                        {{ selected_chat.title }}
+                    </h4>
+
+                {% else %}
+
+                    <h4 class="mb-0">
+                        Welcome 🚀
+                    </h4>
+
+                {% endif %}
+
+            </div>
+
+            <!-- Messages -->
+            <div id="chat-box"
+                    class="flex-grow-1 p-4 bg-dark"
+                    style="overflow-y:auto;">
+
+                <div id="typing-indicator"
+                        style="display:none;">
+
+                    <div class="d-flex justify-content-start mb-3">
+
+                        <div class="ai-message">
+
+                            thinking...
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                {% if selected_chat %}
+
+                    {% for message in selected_chat.messages.all %}
+
+                        {% if message.sender == 'user' %}
+
+                            <div class="d-flex justify-content-end mb-3">
+
+                                <div class="user-message">
+
+                                    {% if message.image %}
+                                        <img
+                                            src="{{ message.image.url }}"
+                                            class="img-fluid rounded mb-2"
+                                            style="max-width:300px;">
+                                    {% endif %}
+
+                                    {% if message.content %}
+                                        <pre>{{ message.content }}</pre>
+                                    {% endif %}
+
+                                </div>
+
+                            </div>
+
+                        {% else %}
+
+                            <div class="d-flex justify-content-start mb-3">
+
+                                <div class="ai-message markdown-content">
+
+                                    {{ message.content }}
+
+                                    
+
+                                </div>
+
+                            </div>
+
+                        {% endif %}
+
+                    {% endfor %}
+
+                {% else %}
+
+                    <div class="text-center text-secondary mt-5">
+
+                        <h3>
+                            Start a new conversation 🚀
+                        </h3>
+
+                    </div>
+
+                {% endif %}
+
+            </div>
+
+            <!-- Input -->
+            {% if selected_chat %}
+
+            <div class="p-3 bg-dark border-top border-secondary">
+
+                <form
+                    method="POST"
+                    id="chat-form"
+                    enctype="multipart/form-data">
+
+                    {% csrf_token %}
+
+
+                    <div class="input-group">
+
+                        <input
+                            type="file"
+                            id="image-input"
+                            name="image"
+                            class="form-control"
+                            accept="image/*">
+
+                        <input
+                            type="text"
+                            id="message-input"
+                            name="message"
+                            class="form-control"
+                            placeholder="Message AI...">
+
+                        <button
+                            type="button"
+                            id="voice-btn"
+                            class="btn btn-warning">
+                            🎤
+                        </button>
+
+                        <button
+                            class="btn btn-success"
+                            type="submit">
+
+                            Send
+
+                        </button>
+
+                    </div>
+
+                </form>
+
+            </div>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+</div>
+
+<style>
+
+body{
+    background:#212121;
+}
+
+.user-message{
+    background:#0d6efd;
+    color:white;
+    padding:12px;
+    border-radius:15px;
+    max-width:75%;
+}
+
+.user-message pre{
+    margin:0;
+    white-space:pre-wrap;
+}
+
+.ai-message{
+    background:#343541;
+    color:white;
+    padding:12px;
+    border-radius:15px;
+    max-width:75%;
+}
+
+.ai-message pre{
+    white-space:pre-wrap;
+}
+
+.markdown-content pre{
+    background:#111;
+    padding:15px;
+    border-radius:10px;
+    overflow-x:auto;
+}
+
+.markdown-content code{
+    font-family:Consolas, monospace;
+}
+
+#drop-zone{
+    transition:0.3s;
+    cursor:pointer;
+}
+
+#drop-zone.dragover{
+    background:#198754;
+    border-color:#198754 !important;
+    color:white;
+}
+
+</style>
+
+<script>
+
+function renameChat(chatId){
+
+    let newTitle = prompt(
+        "Enter new chat title:"
+    );
+
+    if(newTitle){
+
+        let form = document.createElement("form");
+
+        form.method = "POST";
+
+        form.action =
+            "/rename-chat/" +
+            chatId +
+            "/";
+
+        let csrf =
+            document.createElement("input");
+
+        csrf.type = "hidden";
+
+        csrf.name =
+            "csrfmiddlewaretoken";
+
+        csrf.value =
+            "{{ csrf_token }}";
+
+        form.appendChild(csrf);
+
+        let title =
+            document.createElement("input");
+
+        title.type = "hidden";
+
+        title.name = "title";
+
+        title.value = newTitle;
+
+        form.appendChild(title);
+
+        document.body.appendChild(form);
+
+        form.submit();
+    }
+}
+
+function deleteChat(chatId){
+
+    if(confirm("Delete this chat?")){
+
+        window.location.href =
+            "/delete-chat/" +
+            chatId +
+            "/";
+    }
+}
+
+function shareChat(shareId){
+
+    let link =
+        window.location.origin +
+        "/share/" +
+        shareId +
+        "/";
+
+    navigator.clipboard.writeText(
+        link
+    );
+
+    alert(
+        "Share link copied:\n\n" +
+        link
+    );
+}
+
+let chatForm =
+    document.getElementById(
+        "chat-form"
+    );
+
+if(chatForm){
+
+    chatForm.addEventListener(
+        "submit",
+        function(){
+
+            let typing =
+                document.getElementById(
+                    "typing-indicator"
+                );
+
+            if(typing){
+
+                typing.style.display =
+                    "block";
+            }
+
+            let chatBox =
+                document.getElementById(
+                    "chat-box"
+                );
+
+            if(chatBox){
+
+                chatBox.scrollTop =
+                    chatBox.scrollHeight;
+            }
+
+        }
+    );
+}
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function(){
+
+        document
+        .querySelectorAll(
+            ".markdown-content"
+        )
+        .forEach(function(element){
+
+            element.innerHTML =
+                marked.parse(
+                    element.textContent
+                );
+
+        });
+
+        hljs.highlightAll();
+
+        let chatBox =
+            document.getElementById(
+                "chat-box"
+            );
+
+        if(chatBox){
+
+            chatBox.scrollTop =
+                chatBox.scrollHeight;
+        }
+
+        document
+        .querySelectorAll(".speak-btn")
+        .forEach(function(button){
+
+            button.addEventListener(
+                "click",
+                function(){
+
+                    window.speechSynthesis.cancel();
+
+                    const messageBox =
+                        button.closest(
+                            ".ai-message"
+                        );
+
+                    const text =
+                        messageBox.innerText
+                        .replace(
+                            "🔊 Speak",
+                            ""
+                        )
+                        .trim();
+
+                    const utterance =
+                        new SpeechSynthesisUtterance(
+                            text
+                        );
+
+                    utterance.lang = "en-US";
+
+                    speechSynthesis.speak(
+                        utterance
+                    );
+
+                }
+            );
+
+        });
+
+    }
+);
+
+const dropZone =
+    document.getElementById(
+        "drop-zone"
+    );
+
+const imageInput =
+    document.getElementById(
+        "image-input"
+    );
+
+if(dropZone && imageInput){
+
+    dropZone.addEventListener(
+        "dragover",
+        function(e){
+            e.preventDefault();
+            dropZone.classList.add(
+                "dragover"
+            );
+        }
+    );
+
+    dropZone.addEventListener(
+        "dragleave",
+        function(){
+            dropZone.classList.remove(
+                "dragover"
+            );
+        }
+    );
+
+    dropZone.addEventListener(
+        "drop",
+        function(e){
+            e.preventDefault();
+            dropZone.classList.remove(
+                "dragover"
+            );
+            imageInput.files =
+                e.dataTransfer.files;
+            dropZone.innerHTML =
+                "✅ " +
+                e.dataTransfer.files[0].name;
+        }
+    );
+
+    dropZone.addEventListener(
+        "click",
+        function(){
+            imageInput.click();
+        }
+    );
+
+    imageInput.addEventListener(
+        "change",
+        function(){
+            if(imageInput.files.length){
+                dropZone.innerHTML =
+                    "✅ " +
+                    imageInput.files[0].name;
+            }
+        }
+    );
+
+}
+
+const voiceButton =
+    document.getElementById(
+        "voice-btn"
+    );
+
+const messageInput =
+    document.getElementById(
+        "message-input"
+    );
+
+if(
+    'webkitSpeechRecognition'
+    in window
+){
+    const recognition =
+        new webkitSpeechRecognition();
+
+    recognition.continuous =
+        false;
+
+    recognition.interimResults =
+        false;
+
+    recognition.lang =
+        "en-US";
+
+    voiceButton.addEventListener(
+        "click",
+        function(){
+            voiceButton.innerHTML =
+                "🎙️ Listening...";
+            recognition.start();
+        }
+    );
+
+    recognition.onresult =
+        function(event){
+            const transcript =
+                event.results[0][0]
+                .transcript;
+            messageInput.value =
+                transcript;
+            voiceButton.innerHTML =
+                "🎤";
+        };
+
+    recognition.onerror =
+        function(){
+            voiceButton.innerHTML =
+                "🎤";
+        };
+
+    recognition.onend =
+        function(){
+            voiceButton.innerHTML =
+                "🎤";
+        };
+}
+
+</script>
+
+{% endblock %}
